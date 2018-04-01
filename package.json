@@ -1,0 +1,19 @@
+{
+  "name": "vtcnc",
+  "version": "1.0.0",
+  "description": "A node.js webserver app to communicate with CNC controllers",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marcus Addy",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.3",
+    "fs": "0.0.1-security",
+    "serialport": "^6.1.1",
+    "websocket": "^1.0.25",
+    "xterm": "^3.2.0"
+  },
+  "devDependencies": {}
+}
