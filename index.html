@@ -30,46 +30,108 @@
         var btn = $(e.currentTarget)
         var cmd = $('#cmdLine').val();
         ws.send(cmd);
+        $('#cmdLine').val('');
+    }
+
+    function sendGcode(e) {
+        var btn = $(e.currentTarget)
+        var gcode = $('#gcode').val();
+        var lines = gcode.match(/[^\r\n]+/g);
+        $.each(lines, function(i,ln) {
+            ws.send(ln);
+        })
+        $('#gcode').val('');
+    }
+
+    function probePoints(pt) {
+        $('#probePoints').append(pt + "\r");
+    }
+
+    function axisInfo(info) {
+        var lines = info.match(/^<(.+)>$/);
+
+        var pattern = /[a-zA-Z]+(:[0-9\.\-]+(,[0-9\.\-]+){0,5})?/g;
+        var params = lines[1].match(pattern);
+
+        var Status = params[0];
+        var MPos = params[1];
+        var WPos = params[2];
+
+        params.shift();
+        const result = {};
+        for (let param of params) {
+            const nv = param.match(/^(.+):(.+)/);
+            if (nv) {
+                let type = nv[1];
+                let value = nv[2].split(',');
+                result[type] = value;
+            }
+        }
+
+        var M = params[0].replace('MPos:','').split(',')
+        var W = params[1].replace('WPos:','').split(',')
+
+        var MPos = {
+            x: parseFloat(M[0]),
+            y: parseFloat(M[1]),
+            z: parseFloat(M[2])
+        } 
+        var WPos = {
+            x: parseFloat(W[0]),
+            y: parseFloat(W[1]),
+            z: parseFloat(W[2])
+        } 
+
+        $('#mposX').val(MPos.x);
+        $('#mposY').val(MPos.y);
+        $('#mposZ').val(MPos.z);
+
+        $('#wposX').val(WPos.x);
+        $('#wposY').val(WPos.y);
+        $('#wposZ').val(WPos.z);
     }
 
     function WebSocketStart()
      {
         if ("WebSocket" in window)
         {
-
            // Let us open a web socket
            ws = new WebSocket("ws://localhost:8080/","echo-protocol");
-            
            ws.onopen = function()
            {
-
                 term = new Terminal();
                 term.open(document.getElementById('terminal'));         
-
                 $('#go').on('click', sendCmd);
-
+                $('#gcodeSubmit').on('click', sendGcode);
            };
-            
            ws.onmessage = function (evt) 
            { 
-              var received_msg = evt.data;
-              //alert(received_msg);
-              //$('body').append(received_msg);
-              term.writeln(received_msg)
+                var received_msg = evt.data;
+
+                switch (true) {
+                    case /^</.test(received_msg):
+                        // status message do not display
+                        axisInfo(received_msg);
+                        break;
+                    case /^\[PRB/.test(received_msg):
+                        // probe point
+                        probePoints(received_msg);
+                        break;
+                    default:
+                        term.writeln(received_msg)
+                    break;
+                }
+
            };
-            
            ws.onclose = function()
            { 
               // websocket is closed.
-              alert("Connection is closed..."); 
+              //alert("Connection is closed..."); 
            };
-                
            window.onbeforeunload = function(event) {
               socket.close();
            };
-
         }
-        
         else
         {
            // The browser doesn't support WebSocket
@@ -85,6 +147,32 @@
 <body>
     <div class="row">
         <div class="col-md-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input id='mposX' type="numeric" class="form-control" placeholder="MposX">
+                    </div>
+                    <div class="col-md-6">
+                            <input id='wposX' type="numeric" class="form-control" placeholder="WposX">
+                    </div>
+                </div>
+                <div class="row">
+                        <div class="col-md-6">
+                            <input id='mposY' type="numeric" class="form-control" placeholder="MposY">
+                        </div>
+                        <div class="col-md-6">
+                                <input id='wposY' type="numeric" class="form-control" placeholder="WposY">
+                        </div>
+                    </div>
+                    <div class="row">
+                            <div class="col-md-6">
+                                <input id='mposZ' type="numeric" class="form-control" placeholder="MposZ">
+                            </div>
+                            <div class="col-md-6">
+                                    <input id='wposZ' type="numeric" class="form-control" placeholder="WposZ">
+                            </div>
+                        </div>
+            </div>
+        <div class="col-md-3">
             <div class="input-group">
                 <input id='cmdLine' type="text" class="form-control" placeholder="Command">
                     <span class="input-group-btn">
@@ -93,7 +181,20 @@
             </div><!-- /input-group -->
         </div>
         <div class="col-md-3">
+                <div class="input-group">
+                    <textarea class="form-control" id="gcode" rows="3" placeholder="Gcode"></textarea>
+                        <span class="input-group-btn">
+                            <button id='gcodeSubmit' class="btn btn-default" type="button">Submit</button>
+                    </span>
+                </div><!-- /input-group -->
+            </div>
+        <div class="col-md-3">
             <div id="terminal"></div>
+        </div>
+        <div class="col-md-3">
+                <div class="input-group">
+                    <textarea class="form-control" id="probePoints" rows="10" placeholder="Probe Points"></textarea>
+                </div><!-- /input-group -->
         </div>
     </div>
 
