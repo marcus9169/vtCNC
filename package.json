@@ -2,7 +2,7 @@
   "name": "vtcnc",
   "version": "1.0.1",
   "description": "A node.js webserver app to control with smoothie",
-  "main": "app.js",
+  "main": "vtCNCserver.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
