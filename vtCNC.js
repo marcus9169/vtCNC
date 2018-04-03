@@ -6,8 +6,21 @@ var subscribedReader;
 var port;
 var parser;
 
+function availablePorts(callback) {
+    SerialPort.list(function (err, results)
+    {
+        if (err)
+        {
+            throw err;
+        }
+        var JSONstr = JSON.stringify(results);
+        callback(JSONstr);
+    })
+    
+};
+
 function start(cmd) {
-    port = new SerialPort('COM10', {
+    port = new SerialPort(cmd, {
         buadRate: 115200,
         dataBits: 8,
         parity: 'none',
@@ -51,7 +64,8 @@ var Gstack = [];
 module.exports = {
     sendCommand: sendCommand,
     subscriber: subscribeRead,
-    start: start
+    start: start,
+    availablePorts: availablePorts
 }
 
 writeBufGcode = function (Gstring) {

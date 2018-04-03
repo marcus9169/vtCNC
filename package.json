@@ -1,6 +1,6 @@
 {
   "name": "vtcnc",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A node.js webserver app to control with smoothie",
   "main": "vtCNCserver.js",
   "scripts": {

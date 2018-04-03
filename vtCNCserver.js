@@ -21,18 +21,29 @@ const main = () => {
     // GET method route
     app.get('/', function (req, res) {
         if (req.url == '/') {
-        fs.readFile(__dirname + '/index.html',function (err, data){
-            if (err) {
-                console.log(err);
-            } 
-            console.log('returning html');
-            res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
-            res.write(data);
-            res.end();
+            fs.readFile(__dirname + '/index.html',function (err, data){
+                if (err) {
+                    console.log(err);
+                } 
+                console.log('returning html');
+                res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
+                res.write(data);
+                res.end();
+                return;
         });
-        return;
         }
-    })
+    });
+
+    app.get('/availablePorts', function (req, res) {
+            
+            console.log('returning available ports');
+
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(ports));
+            res.end();
+        return;
+    });
+
 
     app.use("/", express.static(__dirname));
 
@@ -89,7 +100,17 @@ const main = () => {
                 console.log('Received Message: ' + message.utf8Data);
                 //connection.sendUTF(message.utf8Data);
                 //send to vtCNC
-                vtCNC.sendCommand(message.utf8Data);
+
+                switch (true) {
+                    case /^start:/.test(message.utf8Data):
+                        var cmds = message.utf8Data.split(':');
+                        vtCNC.start(cmds[1]);
+                        break;
+                    default:
+                        vtCNC.sendCommand(message.utf8Data);
+                    break;
+                }
+
             }
             else if (message.type === 'binary') {
                 console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
@@ -100,14 +121,14 @@ const main = () => {
             console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
         });
 
+        vtCNC.availablePorts(sendToClient);
         vtCNC.subscriber(sendToClient);
-        vtCNC.start()
     });
 
     var sendToClient = function (data) {
-    if (connection.state == 'open') {
-        connection.sendUTF(data);
-    }
+        if (connection.state == 'open') {
+            connection.sendUTF(data);
+        }
     }
 
     console.log('vtcnc here!')
