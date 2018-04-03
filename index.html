@@ -96,7 +96,7 @@
         if ("WebSocket" in window)
         {
            // Let us open a web socket
-           ws = new WebSocket("ws://localhost:8080/","echo-protocol");
+           ws = new WebSocket("ws://" + window.location.host,"echo-protocol");
            ws.onopen = function()
            {
                 term = new Terminal();
