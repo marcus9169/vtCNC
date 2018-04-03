@@ -21,7 +21,11 @@ const main = () => {
     // GET method route
     app.get('/', function (req, res) {
         if (req.url == '/') {
-        fs.readFile('index.html',function (err, data){
+        fs.readFile(__dirname + '/index.html',function (err, data){
+            if (err) {
+                console.log(err);
+            } 
+            console.log('returning html');
             res.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
             res.write(data);
             res.end();

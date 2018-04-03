@@ -1,6 +1,6 @@
 {
   "name": "vtcnc",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A node.js webserver app to control with smoothie",
   "main": "vtCNCserver.js",
   "scripts": {
@@ -8,6 +8,9 @@
   },
   "author": "Marcus Addy",
   "license": "ISC",
+  "bin": {
+    "vtcnc": "./bin/vtcnc.js"
+  },
   "dependencies": {
     "express": "^4.16.3",
     "fs": "0.0.1-security",
